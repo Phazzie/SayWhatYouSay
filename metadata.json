@@ -1,0 +1,5 @@
+{
+  "name": "Polyglot Transcribe-X AI App Builder",
+  "description": "An intelligent platform to create custom audio transcription applications by comparing results from multiple leading AI models and flagging discrepancies.",
+  "requestFramePermissions": []
+}
