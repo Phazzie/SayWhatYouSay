@@ -1,5 +1,5 @@
 {
-  "name": "Polyglot Transcribe-X AI App Builder",
-  "description": "An intelligent platform to create custom audio transcription applications by comparing results from multiple leading AI models and flagging discrepancies.",
+  "name": "SayWhat You Say",
+  "description": "An intelligent platform for comparing AI-generated audio transcriptions. Upload audio, get transcripts from multiple services, and easily spot and correct discrepancies.",
   "requestFramePermissions": []
 }

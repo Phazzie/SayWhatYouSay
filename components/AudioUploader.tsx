@@ -1,30 +1,21 @@
-
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { ApiKeySet } from '../types';
 import { UploadIcon } from './icons/UploadIcon';
 import { SERVICES } from '../constants';
+import { AppContext } from '../context/AppContext';
+import { AudioContext } from '../context/AudioContext';
+import { useTranscription } from '../hooks/useTranscription';
 
-interface AudioUploaderProps {
-  audioFile: File | null;
-  onFileSelect: (file: File | null) => void;
-  onTranscribe: () => void;
-  isTranscribing: boolean;
-  apiKeys: ApiKeySet;
-}
+export const AudioUploader: React.FC = () => {
+  const { apiKeys, isTranscribing } = useContext(AppContext);
+  const { audioFile, setAudioFile } = useContext(AudioContext);
+  const { transcribe } = useTranscription();
 
-export const AudioUploader: React.FC<AudioUploaderProps> = ({
-  audioFile,
-  onFileSelect,
-  onTranscribe,
-  isTranscribing,
-  apiKeys
-}) => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
-      onFileSelect(acceptedFiles[0]);
+      setAudioFile(acceptedFiles[0]);
     }
-  }, [onFileSelect]);
+  }, [setAudioFile]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -35,6 +26,12 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
 
   const activeServicesCount = SERVICES.filter(s => apiKeys[s.id].trim() !== '').length;
   const canTranscribe = !!audioFile && !isTranscribing && activeServicesCount >= 2;
+
+  const handleTranscribeClick = () => {
+    if (canTranscribe && audioFile) {
+      transcribe(audioFile);
+    }
+  }
 
   return (
     <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-6 space-y-4">
@@ -60,7 +57,7 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
 
       <div className="flex justify-center pt-2">
         <button
-          onClick={onTranscribe}
+          onClick={handleTranscribeClick}
           disabled={!canTranscribe}
           className="w-full md:w-auto px-12 py-3 text-lg font-semibold text-white bg-indigo-600 rounded-md shadow-lg hover:bg-indigo-700 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-105 disabled:scale-100"
         >
