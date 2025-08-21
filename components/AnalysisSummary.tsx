@@ -74,7 +74,7 @@ export const AnalysisSummary: React.FC = () => {
                                 </div>
                                 <div className="mt-3 pt-3 border-t border-gray-700/50">
                                     <p className="text-xs font-semibold text-gray-400">AI Reasoning:</p>
-                                    <p className="text-sm text-gray-300 italic">"{chunk.reasoning}"</p>
+                                    <p className="text-sm text-gray-300 italic">&ldquo;{chunk.reasoning}&rdquo;</p>
                                 </div>
                             </button>
                         </div>

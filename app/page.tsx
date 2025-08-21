@@ -1,20 +1,21 @@
-import React, { useContext } from 'react';
-import { Header } from './components/Header';
-import { ApiKeyManager } from './components/ApiKeyManager';
-import { AudioUploader } from './components/AudioUploader';
-import { TranscriptionView } from './components/TranscriptionView';
-import { AnalysisController } from './components/AnalysisController';
-import { AppContext } from './context/AppContext';
-import { WaveformPlayer } from './components/WaveformPlayer';
-import { AnalysisSummary } from './components/AnalysisSummary';
+'use client';
 
-const App: React.FC = () => {
+import React, { useContext } from 'react';
+import { Header } from '@/components/Header';
+import { ApiKeyManager } from '@/components/ApiKeyManager';
+import { AudioUploader } from '@/components/AudioUploader';
+import { TranscriptionView } from '@/components/TranscriptionView';
+import { AnalysisController } from '@/components/AnalysisController';
+import { AppContext } from '@/context/AppContext';
+import { WaveformPlayer } from '@/components/WaveformPlayer';
+import { AnalysisSummary } from '@/components/AnalysisSummary';
+
+export default function HomePage() {
   const {
     transcripts,
     isTranscribing,
     isAnalyzing,
     error,
-    analysisResult,
   } = useContext(AppContext);
 
   return (
@@ -65,6 +66,4 @@ const App: React.FC = () => {
       </main>
     </div>
   );
-};
-
-export default App;
+}

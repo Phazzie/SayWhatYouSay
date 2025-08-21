@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ServiceId, Transcript, Word } from '@/types';
+import { validateAudioFile, TranscribeRequestSchema } from '@/utils/validation';
+import { logger, withLogging } from '@/utils/logger';
 
 // --- MOCK DATA AND FUNCTIONS ---
 // This is a "smarter" mock. It generates varied data based on the filename
@@ -86,20 +88,56 @@ const mockApiServiceCall = (serviceId: ServiceId, file: File): Promise<Transcrip
 
 // --- API ROUTE HANDLER ---
 
-export async function POST(req: NextRequest) {
+const handleTranscribe = async (req: NextRequest) => {
+  const startTime = Date.now();
+  
   try {
+    logger.apiRequest('POST', '/api/transcribe');
+    
     const formData = await req.formData();
     const file = formData.get('audio') as File | null;
     const services = formData.get('services') as string | null;
 
     if (!file) {
+      logger.warn('Transcribe request missing audio file');
       return NextResponse.json({ error: 'No audio file provided.' }, { status: 400 });
     }
+    
     if (!services) {
+      logger.warn('Transcribe request missing services parameter');
       return NextResponse.json({ error: 'No services specified.' }, { status: 400 });
     }
 
+    // Validate file
+    try {
+      validateAudioFile(file);
+      logger.info('Audio file validation passed', { 
+        filename: file.name, 
+        size: file.size, 
+        type: file.type 
+      });
+    } catch (validationError) {
+      logger.warn('Audio file validation failed', { 
+        error: validationError, 
+        filename: file.name,
+        size: file.size,
+        type: file.type
+      });
+      return NextResponse.json({ 
+        error: validationError instanceof Error ? validationError.message : 'Invalid file' 
+      }, { status: 400 });
+    }
+
+    // Validate services
+    try {
+      TranscribeRequestSchema.parse({ services });
+    } catch (validationError) {
+      logger.warn('Services validation failed', { error: validationError });
+      return NextResponse.json({ error: 'Invalid services parameter' }, { status: 400 });
+    }
+
     const serviceIds = services.split(',') as ServiceId[];
+    logger.info('Starting transcription', { serviceIds, filename: file.name });
     
     const transcriptionPromises = serviceIds.map(id => mockApiServiceCall(id, file));
 
@@ -122,11 +160,20 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    const duration = Date.now() - startTime;
+    logger.apiResponse('POST', '/api/transcribe', 200, duration, {
+      servicesCount: serviceIds.length,
+      successfulTranscripts: formattedResults.filter(r => r.status === 'fulfilled').length
+    });
+
     return NextResponse.json(formattedResults, { status: 200 });
 
-  } catch (error)
- {
-    console.error('Transcription API error:', error);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.apiResponse('POST', '/api/transcribe', 500, duration);
+    logger.error('Transcription API error', error as Error);
     return NextResponse.json({ error: 'Failed to process transcription request.' }, { status: 500 });
   }
-}
+};
+
+export const POST = withLogging(handleTranscribe, 'transcribe-handler');
