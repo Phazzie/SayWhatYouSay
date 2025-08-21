@@ -110,8 +110,11 @@ export async function POST(req: NextRequest) {
                 },
             });
             
-            const jsonText = response.text.trim();
+            const jsonText = response.text?.trim() || '';
             try {
+                if (!jsonText) {
+                    throw new Error("Empty response from AI");
+                }
                 analysisJson = JSON.parse(jsonText);
             } catch (e) {
                 console.error("Failed to parse Gemini JSON response:", jsonText);

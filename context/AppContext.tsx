@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useState, useMemo, useEffect } from 'react';
 import { AppContextType, AppState, ApiKeySet, Transcript, AnalysisModelId, AnalysisResult, ServiceId } from '../types';
 
