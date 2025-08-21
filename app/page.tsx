@@ -16,7 +16,6 @@ export default function HomePage() {
     isTranscribing,
     isAnalyzing,
     error,
-    analysisResult,
   } = useContext(AppContext);
 
   return (

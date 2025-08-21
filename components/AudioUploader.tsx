@@ -44,7 +44,7 @@ export const AudioUploader: React.FC = () => {
         {isDragActive ? (
           <p className="text-gray-300">Drop the file here ...</p>
         ) : (
-          <p className="text-gray-400 text-center">Drag 'n' drop an audio file here, or click to select</p>
+          <p className="text-gray-400 text-center">Drag &apos;n&apos; drop an audio file here, or click to select</p>
         )}
         <p className="text-xs text-gray-500 mt-1">Supported: MP3, WAV, M4A, FLAC, OGG</p>
       </div>

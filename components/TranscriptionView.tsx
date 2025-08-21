@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useContext } from 'react';
-import { Transcript, Word, AnalysisResult, ServiceId } from '../types';
+import React, { useState, useMemo, useContext } from 'react';
+import { Transcript, AnalysisResult, ServiceId } from '../types';
 import { SERVICES } from '../constants';
 import { PlayIcon } from './icons/PlayIcon';
 import { AppContext } from '../context/AppContext';
