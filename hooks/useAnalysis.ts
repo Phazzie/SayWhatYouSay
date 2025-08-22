@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { AppContext } from '../context/AppContext';
-import { AnalysisResult } from '../types';
+import { analyzeTranscripts } from '../services/aiAnalysisService';
 
 export const useAnalysis = () => {
   const {
@@ -9,7 +9,6 @@ export const useAnalysis = () => {
     setIsAnalyzing,
     setAnalysisResult,
     setError,
-    apiKeys,
   } = useContext(AppContext);
 
   const analyze = async () => {
@@ -22,20 +21,7 @@ export const useAnalysis = () => {
     setAnalysisResult(null);
 
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ transcripts, provider: analysisProvider }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Server responded with status ${response.status}`);
-      }
-
-      const results: AnalysisResult = await response.json();
+      const results = await analyzeTranscripts(transcripts, analysisProvider);
       setAnalysisResult(results);
     } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred during AI analysis.');
