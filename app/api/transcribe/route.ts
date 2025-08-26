@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import formidable from 'formidable';
 import { SpeechClient } from '@google-cloud/speech';
+import OpenAI from 'openai';
 import { ServiceId, Transcript, Word } from '@/types';
 import fs from 'fs';
 
@@ -50,6 +51,36 @@ const transcribeWithGoogle = async (filepath: string): Promise<Transcript> => {
   }
 };
 
+// --- OpenAI Whisper API Call ---
+const transcribeWithWhisper = async (filepath: string): Promise<Transcript> => {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+  try {
+    const response = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(filepath),
+      model: 'whisper-1',
+      response_format: 'verbose_json',
+      timestamp_granularities: ['word'],
+    });
+
+    const words: Word[] = response.words.map(wordInfo => ({
+      text: wordInfo.word,
+      start: wordInfo.start,
+      end: wordInfo.end,
+      confidence: 1, // Whisper API does not provide a confidence score
+    }));
+
+    return {
+      serviceId: ServiceId.Whisper,
+      words: words,
+      status: 'fulfilled',
+    };
+  } catch (error) {
+    console.error('OpenAI Whisper API Error:', error);
+    throw new Error(`Whisper API Error: ${error instanceof Error ? error.message : 'Unknown'}`);
+  }
+};
+
 // The main handler for the /api/transcribe route
 export const transcribeApiHandler = async (req: IncomingMessage, res: ServerResponse) => {
   const form = formidable({});
@@ -77,6 +108,8 @@ export const transcribeApiHandler = async (req: IncomingMessage, res: ServerResp
       const promises = serviceIds.map(id => {
         if (id === ServiceId.Google) {
           return transcribeWithGoogle(filepath);
+        } else if (id === ServiceId.Whisper) {
+          return transcribeWithWhisper(filepath);
         } else {
           return Promise.resolve({
             serviceId: id,
