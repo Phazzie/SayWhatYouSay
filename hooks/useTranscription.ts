@@ -1,7 +1,8 @@
 import { useContext } from 'react';
 import { AppContext } from '../context/AppContext';
+import { AudioContext } from '../context/AudioContext';
 import { SERVICES } from '../constants';
-import { transcribeAudio } from '../services/transcriptionService';
+import { ServiceId, Transcript } from '../types';
 
 export const useTranscription = () => {
   const {
@@ -11,6 +12,7 @@ export const useTranscription = () => {
     setTranscripts,
     clearResults,
   } = useContext(AppContext);
+  const { audioFile } = useContext(AudioContext);
 
   const transcribe = async (file: File) => {
     if (!file) {
@@ -28,8 +30,21 @@ export const useTranscription = () => {
     clearResults();
 
     try {
-      const serviceIds = activeServices.map(s => s.id);
-      const results = await transcribeAudio(file, serviceIds);
+      const formData = new FormData();
+      formData.append('audio', file);
+      formData.append('services', activeServices.map(s => s.id).join(','));
+
+      const response = await fetch('/api/transcribe', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server responded with status ${response.status}`);
+      }
+
+      const results: Transcript[] = await response.json();
       setTranscripts(results);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred during transcription.');
